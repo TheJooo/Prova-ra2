@@ -3,6 +3,7 @@
 #include <set>
 #include <algorithm>
 #include <cmath>
+#include <unordered_map>
 
 
 // 1. Recursive sequence Algo
@@ -73,36 +74,57 @@ bool belongs_to_T(int x) {
 }
 
 // 4. Belongs to M
-std::set<int> collection_M = {2, 3};
-bool belongs_to_M(int x) {
-    if (collection_M.find(x) != collection_M.end()) return true;
-    for (int i : collection_M) {
-        for (int j : collection_M) {
-            if (i * j == x) {
-                collection_M.insert(x);
-                return true;
-            }
+std::unordered_map<int, bool> cache;
+
+bool belongs_to_M(int n) {
+    if (cache.find(n) != cache.end()) {
+        return cache[n];
+    }
+
+    if (n == 2 || n == 3) {
+        cache[n] = true;
+        return true;
+    }
+
+    for (int i = 2; i < n; i++) {
+        if (belongs_to_M(i) && belongs_to_M(n - i)) {
+            cache[n] = true;
+            return true;
         }
     }
+
+    cache[n] = false;
     return false;
 }
 
 // 5. Belongs to S
-bool belongs_to_S(std::string string) {
-    if (string == "a" || string == "b") return true;
-    if (string.empty()) return false;
-    if (string.back() == 'b') return belongs_to_S(string.substr(0, string.length() - 1));
-    return false;
+bool belongs_to_S(const std::string& s) {
+    if (s.empty()) {
+        return true;
+    } else if (s == "a") {
+        return true;
+    } else if (s.back() == 'b') {
+        std::string substring = s.substr(0, s.length() - 1);
+        return belongs_to_S(substring);
+    } else {
+        return false;
+    }
 }
 
 // 6. Belongs to W
-bool belongs_to_W(std::string string) {
-    if (string == "a" || string == "b" || string == "c") return true;
-    if (string.size() < 5) return false;
-    if (string.substr(0, 2) == "a(" && string.substr(string.size() - 2, 2) == ")c") {
-        return belongs_to_W(string.substr(2, string.size() - 4));
+bool belongs_to_W(const std::string& str) {
+    if (str.empty()) {
+        return true;
     }
-    return false;
+    if (str[0] == 'a') {
+        size_t pos = str.find('c');
+        if (pos == std::string::npos || pos == str.length() - 1) {
+            return false;
+        }
+        return belongs_to_W(str.substr(1, pos - 1)) && belongs_to_W(str.substr(pos + 1));
+    } else {
+        return false;
+    }
 }
 
 // 7. Binary sequence
@@ -189,8 +211,16 @@ int main() {
 
 
 
-    // 4. Belongs to M
-    std::cout << "Does 9 belong to M? " << belongs_to_M(9) << std::endl;
+    // 4. Belongs to M 6, 9, 16, 21, 26, 54, 72, 218};
+
+  std::cout << "Does 6 belong to M? " << belongs_to_M(6) << std::endl;
+  std::cout << "Does 9 belong to M? " << belongs_to_M(9) << std::endl;
+  std::cout << "Does 16 belong to M? " << belongs_to_M(16) << std::endl;
+  std::cout << "Does 21 belong to M? " << belongs_to_M(21) << std::endl;
+  std::cout << "Does 26 belong to M? " << belongs_to_M(26) << std::endl;
+  std::cout << "Does 54 belong to M? " << belongs_to_M(54) << std::endl;
+  std::cout << "Does 72 belong to M? " << belongs_to_M(72) << std::endl;
+  std::cout << "Does 218 belong to M? " << belongs_to_M(218) << std::endl;
 
     // 5. Belongs to S
     std::cout << "Does 'a' belong to S? " << belongs_to_S("a") << std::endl;
@@ -221,7 +251,7 @@ int main() {
     // 10. Bacteria Population
     std::cout << "Bacteria population after 5 hours: " << bacteria_population(5) << std::endl;
     std::cout << "Hours for bacteria to exceed 200,000: " << hours_to_exceed(200000) << std::endl;
-
+//hora 1 = 50000
     // 11. Routine
     std::vector<int> list = {3, 7, 4, 2, 6};
     list = Rotina(list, list.size());
@@ -230,6 +260,4 @@ int main() {
         std::cout << num << " ";
     }
     std::cout << std::endl;
-
-    return 0;
 }
